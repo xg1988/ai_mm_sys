@@ -1,0 +1,343 @@
+﻿<!-- 너무 길어져서 나눠서 제공드릴 예정입니다. 아래는 [1부]입니다. -->
+<!-- 계속 받아보시려면 "계속"이라고 입력해주세요 -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>공수 예측 시스템</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar {
+      background-color: #007bff;
+      padding: 12px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .navbar h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      background: #e6f0ff;
+      border-bottom: 1px solid #ccc;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .tab.active {
+      background: #ffffff;
+      border-top: 3px solid #007bff;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 960px;
+      margin: 20px auto;
+      padding: 16px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .effort-group {
+      background: #f7f9fb;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    .effort-group h3 {
+      margin-top: 0;
+      font-size: 16px;
+      color: #333;
+    }
+    .effort-group label {
+      display: block;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+    .detail-btn {
+      margin-top: 20px;
+      padding: 10px 18px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .effort-box {
+      margin-top: 10px;
+      background: #eef6ff;
+      padding: 12px;
+      border-left: 4px solid #3399ff;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+      word-break: break-word;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .modal-close {
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    @media (max-width: 600px) {
+      .tab {
+        font-size: 12px;
+        padding: 10px 6px;
+      }
+      th, td {
+        font-size: 12px;
+        padding: 4px;
+      }
+      .detail-btn {
+        font-size: 13px;
+        padding: 8px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>공수 예측 시스템</h1>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('aiTab', event)">AI 기반 예측</div>
+    <div class="tab" onclick="showTab('manualTab', event)">수동 입력 기반 예측</div>
+  </div>
+
+  <!-- AI 기반 예측 탭 -->
+  <div class="container tab-content active" id="aiTab">
+    <h2>💡 AI 기반 요구사항 분석</h2>
+    <form id="aiForm">
+      <label for="ai-input">자연어로 요구사항을 입력하세요:</label>
+      <textarea id="ai-input" rows="4" style="width:100%; padding:10px; font-size:14px;" placeholder="예: 로그인 실패 시 메시지 개선..."></textarea>
+      <button type="submit" class="detail-btn" style="margin-top:10px;">예상 공수 예측 및 유사 이슈 찾기</button>
+    </form>
+
+    <div class="effort-box">
+      <strong>예상 공수:</strong> <span id="ai-effort">-</span> 시간
+    </div>
+
+    <div class="effort-box">
+      <strong>판단 근거:</strong>
+      <ul id="ai-reason-list">
+        <li>-</li>
+      </ul>
+    </div>
+
+    <div class="effort-group">
+      <h3>🔍 유사 이슈 목록</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>이슈 유형</th>
+            <th>제목</th>
+            <th>담당자</th>
+            <th>스토리 포인트</th>
+            <th>예측 공수</th>
+            <th>상세</th>
+          </tr>
+        </thead>
+        <tbody id="ai-issue-list"></tbody>
+      </table>
+    </div>
+  </div>
+  <!-- 수동 입력 기반 탭 -->
+  <div class="container tab-content" id="manualTab">
+    <h2>⚙️ 세부 개발 항목 선택</h2>
+    <form id="manualEffortForm">
+      <div class="effort-group">
+        <h3>공통 개발 항목 (복수 선택 가능)</h3>
+        <label><input type="checkbox" name="effort" value="0.5"> 단순 Config 변경</label>
+        <label><input type="checkbox" name="effort" value="0.5"> 화면 텍스트 수정</label>
+        <label><input type="checkbox" name="effort" value="1.5"> UI 화면 추가/수정</label>
+        <label><input type="checkbox" name="effort" value="1.5"> DB 처리 포함</label>
+        <label><input type="checkbox" name="effort" value="2.0"> 외부 API 연동</label>
+        <label><input type="checkbox" name="effort" value="2.0"> 배치 처리</label>
+        <label><input type="checkbox" name="effort" value="0.5"> 예외/유효성 처리</label>
+      </div>
+
+      <div class="effort-group">
+        <h3>로직 난이도 (하나만 선택)</h3>
+        <label><input type="radio" name="logic" value="1.0"> 단순 로직</label>
+        <label><input type="radio" name="logic" value="2.5"> 복잡한 로직</label>
+      </div>
+
+      <div class="effort-group">
+        <h3>비개발 작업</h3>
+        <label><input type="checkbox" name="effort" value="1.0"> 테스트 코드 작성</label>
+        <label><input type="checkbox" name="effort" value="0.5"> 문서 작성</label>
+      </div>
+
+      <div class="effort-group">
+        <h3>기능 성격</h3>
+        <label><input type="radio" name="feature" value="0"> 기존 기능 개선</label>
+        <label><input type="radio" name="feature" value="2.0"> 신규 기능 개발</label>
+      </div>
+
+      <button type="button" class="detail-btn" onclick="calculateManualEffort()">예상 공수 계산</button>
+
+      <div class="effort-box">
+        <strong>예상 공수 (선택 기반):</strong> <span id="manual-effort-result">-</span> 시간
+      </div>
+      <div class="effort-box">
+        <strong>계산식:</strong> <span id="manual-effort-explain">-</span>
+      </div>
+    </form>
+  </div>
+  <!-- 이슈 상세 모달 -->
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>이슈 상세 정보</span>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    function showTab(tabId, event) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function showModal(type, title, assignee, points, effort) {
+      const html = `
+        <p><strong>이슈 유형:</strong> ${type}</p>
+        <p><strong>제목:</strong> ${title}</p>
+        <p><strong>담당자:</strong> ${assignee}</p>
+        <p><strong>스토리 포인트:</strong> ${points}</p>
+        <p><strong>예상 공수:</strong> ${effort} 시간</p>
+      `;
+      document.getElementById('modalBody').innerHTML = html;
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function calculateManualEffort() {
+      let total = 0;
+      const expressions = [];
+
+      document.querySelectorAll('input[name="effort"]:checked').forEach(i => {
+        const value = parseFloat(i.value);
+        total += value;
+        expressions.push(`${i.nextSibling.textContent.trim()}(${value})`);
+      });
+
+      const logic = document.querySelector('input[name="logic"]:checked');
+      if (logic) {
+        const value = parseFloat(logic.value);
+        total += value;
+        expressions.push(`${logic.nextSibling.textContent.trim()}(${value})`);
+      }
+
+      const feature = document.querySelector('input[name="feature"]:checked');
+      if (feature) {
+        const value = parseFloat(feature.value);
+        total += value;
+        expressions.push(`${feature.nextSibling.textContent.trim()}(${value})`);
+      }
+
+      document.getElementById('manual-effort-result').textContent = total.toFixed(1);
+      document.getElementById('manual-effort-explain').textContent =
+        expressions.length > 0
+          ? expressions.join(' + ') + ' = ' + total.toFixed(1)
+          : '-';
+    }
+
+    // Mock 처리
+    document.getElementById('aiForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const inputText = document.getElementById('ai-input').value.trim();
+      document.getElementById('ai-effort').textContent = (Math.random() * 10 + 1).toFixed(1);
+      document.getElementById('ai-reason-list').innerHTML = `
+        <li>유사 이슈: 로그인 오류 수정</li>
+        <li>이슈 유형: Bug, 스토리 포인트 유사</li>
+      `;
+      document.getElementById('ai-issue-list').innerHTML = `
+        <tr>
+          <td>Bug</td>
+          <td>로그인 오류 수정</td>
+          <td>홍길동</td>
+          <td>2</td>
+          <td>4.5h</td>
+          <td><button class="detail-btn" onclick="showModal('Bug', '로그인 오류 수정', '홍길동', 2, 4.5)">상세</button></td>
+        </tr>
+        <tr>
+          <td>Story</td>
+          <td>로그인 세션 개선</td>
+          <td>이영희</td>
+          <td>3</td>
+          <td>6.2h</td>
+          <td><button class="detail-btn" onclick="showModal('Story', '로그인 세션 개선', '이영희', 3, 6.2)">상세</button></td>
+        </tr>
+      `;
+    });
+  </script>
+</body>
+</html>
